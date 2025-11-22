@@ -1,6 +1,43 @@
-import React from 'react';
+import React, { useState } from "react";
+import { createContact } from "../api";
 
 export default function Contact() {
+  const [values, setValues] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+    message: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (name) => (event) => {
+    setValues({ ...values, [name]: event.target.value });
+    setError("");
+    setSuccess("");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const data = await createContact(values);
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setSuccess("Message sent successfully! We'll get back to you soon.");
+        setValues({ firstname: "", lastname: "", email: "", message: "" });
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen py-20 px-6">
       <div className="max-w-4xl mx-auto">
@@ -19,7 +56,7 @@ export default function Contact() {
             <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-900/30 rounded-xl p-6">
               <h3 className="text-xl font-semibold text-purple-400 mb-4">Let's Connect</h3>
               <p className="text-gray-300 leading-relaxed">
-                I'm always interested in hearing about new projects and opportunities. 
+                I'm always interested in hearing about new projects and opportunities.
                 Whether you have a question or just want to say hi, feel free to reach out!
               </p>
             </div>
@@ -60,41 +97,77 @@ export default function Contact() {
             </div>
           </div>
 
-          <form className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-purple-400 mb-2">Name</label>
-              <input 
-                type="text" 
-                placeholder="Your Name" 
-                className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors" 
-              />
-            </div>
+          <div className="bg-gray-900/50 backdrop-blur-sm border border-purple-900/30 rounded-xl p-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-400 text-sm">
+                {success}
+              </div>
+            )}
 
-            <div>
-              <label className="block text-sm font-medium text-purple-400 mb-2">Email</label>
-              <input 
-                type="email" 
-                placeholder="you@example.com" 
-                className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors" 
-              />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-purple-400 mb-2">First Name</label>
+                  <input
+                    type="text"
+                    value={values.firstname}
+                    onChange={handleChange("firstname")}
+                    placeholder="First Name"
+                    required
+                    className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-purple-400 mb-2">Last Name</label>
+                  <input
+                    type="text"
+                    value={values.lastname}
+                    onChange={handleChange("lastname")}
+                    placeholder="Last Name"
+                    required
+                    className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                </div>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-purple-400 mb-2">Message</label>
-              <textarea 
-                placeholder="Your message" 
-                className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none" 
-                rows={5}
-              ></textarea>
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-purple-400 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={values.email}
+                  onChange={handleChange("email")}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+              </div>
 
-            <button 
-              type="submit" 
-              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-purple-600/30 font-medium"
-            >
-              Send Message
-            </button>
-          </form>
+              <div>
+                <label className="block text-sm font-medium text-purple-400 mb-2">Message</label>
+                <textarea
+                  value={values.message}
+                  onChange={handleChange("message")}
+                  placeholder="Your message"
+                  required
+                  className="w-full bg-gray-900/50 border border-purple-900/30 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors resize-none"
+                  rows={5}
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-purple-600/30 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Sending..." : "Send Message"}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

@@ -17,6 +17,7 @@ const signin = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {
@@ -43,4 +44,21 @@ const hasAuthorization = (req, res, next) => {
   }
   next();
 };
-export default { signin, signout, requireSignin, hasAuthorization };
+
+const isAdmin = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.auth._id);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({
+        error: "Admin access required",
+      });
+    }
+    next();
+  } catch (err) {
+    return res.status(403).json({
+      error: "Could not verify admin status",
+    });
+  }
+};
+
+export default { signin, signout, requireSignin, hasAuthorization, isAdmin };
