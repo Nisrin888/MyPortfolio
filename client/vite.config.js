@@ -9,14 +9,14 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/auth': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
+      '/api': 'http://localhost:3001',
+      '/auth': 'http://localhost:3001',
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    css: true,
   },
 })
